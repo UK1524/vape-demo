@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VPRX — Premium Vape & E-Cigarettes</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --c1:#0a0a12;--c2:#0f0f1e;--c3:#141428;
+  --neon:#7b2fff;--neon2:#ff2f7b;--neon3:#2fffb4;
+  --text:#f0eeff;--muted:#7a7a9d;--border:rgba(123,47,255,0.2);
+}
+html,body{width:100%;min-height:100%;background:var(--c1);color:var(--text);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;scroll-behavior:smooth;}
+canvas#bg{position:fixed;top:0;left:0;z-index:0;pointer-events:none;}
+.site{position:relative;z-index:1;}
+
+/* CURSOR */
+.cursor{position:fixed;width:12px;height:12px;background:var(--neon3);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;}
+.cursor-ring{position:fixed;width:36px;height:36px;border:1px solid rgba(123,47,255,0.6);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .15s ease;}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:20px 48px;position:sticky;top:0;z-index:500;border-bottom:1px solid var(--border);backdrop-filter:blur(20px);background:rgba(10,10,18,0.85);}
+.logo{font-family:'Syncopate',sans-serif;font-size:20px;letter-spacing:4px;background:linear-gradient(90deg,var(--neon),var(--neon2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-links{display:flex;gap:32px;align-items:center;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:600;transition:color .2s;cursor:pointer;}
+.nav-links a:hover{color:var(--neon3);}
+.nav-right{display:flex;gap:14px;align-items:center;}
+.cart-pill{display:flex;align-items:center;gap:8px;background:rgba(123,47,255,0.12);border:1px solid var(--border);border-radius:100px;padding:8px 18px;cursor:pointer;transition:all .2s;font-size:13px;font-weight:600;}
+.cart-pill:hover{background:rgba(123,47,255,0.2);border-color:rgba(123,47,255,0.5);}
+.cart-badge{background:var(--neon2);color:#fff;width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+
+/* HERO */
+.hero{min-height:92vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:60px 48px;gap:40px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-200px;right:-100px;width:700px;height:700px;background:radial-gradient(ellipse,rgba(123,47,255,0.12),transparent 70%);pointer-events:none;}
+.hero::after{content:'';position:absolute;bottom:-200px;left:-100px;width:500px;height:500px;background:radial-gradient(ellipse,rgba(47,255,180,0.07),transparent 70%);pointer-events:none;}
+.hero-left{z-index:2;}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--neon3);margin-bottom:24px;font-weight:600;}
+.eyebrow-dot{width:6px;height:6px;background:var(--neon3);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.hero h1{font-family:'Syncopate',sans-serif;font-size:clamp(38px,5.5vw,72px);line-height:1.05;letter-spacing:1px;margin-bottom:24px;}
+.h1-line1{display:block;color:var(--text);}
+.h1-line2{display:block;background:linear-gradient(135deg,var(--neon),var(--neon2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.h1-line3{display:block;color:var(--neon3);}
+.hero-desc{color:var(--muted);font-size:15px;line-height:1.8;max-width:440px;margin-bottom:36px;font-weight:300;}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:48px;}
+.btn-glow{background:linear-gradient(135deg,var(--neon),var(--neon2));color:#fff;border:none;padding:14px 34px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s;}
+.btn-glow:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(123,47,255,0.4);}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);padding:14px 34px;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s;}
+.btn-ghost:hover{border-color:rgba(123,47,255,0.6);background:rgba(123,47,255,0.06);}
+.hero-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.metric{background:var(--c2);padding:16px;text-align:center;}
+.metric-val{font-family:'Syncopate',sans-serif;font-size:22px;background:linear-gradient(135deg,var(--neon3),var(--neon));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.metric-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+.hero-right{display:flex;align-items:center;justify-content:center;z-index:2;}
+#hero-canvas{border-radius:20px;cursor:grab;filter:drop-shadow(0 0 60px rgba(123,47,255,0.3));}
+#hero-canvas:active{cursor:grabbing;}
+
+/* MARQUEE */
+.marquee-wrap{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--c2);overflow:hidden;padding:14px 0;}
+.marquee-track{display:flex;gap:48px;width:max-content;animation:marquee 18s linear infinite;}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.marquee-item{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);white-space:nowrap;font-weight:600;}
+.marquee-item span{color:var(--neon3);margin-right:6px;}
+
+/* SECTION */
+.section{padding:100px 48px;}
+.sect-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--neon);font-weight:700;margin-bottom:12px;}
+.sect-title{font-family:'Syncopate',sans-serif;font-size:clamp(28px,3.5vw,44px);letter-spacing:1px;margin-bottom:12px;line-height:1.1;}
+.sect-sub{color:var(--muted);font-size:15px;max-width:500px;line-height:1.7;font-weight:300;}
+
+/* CATEGORY STRIP */
+.cat-strip{display:flex;gap:12px;margin:36px 0;flex-wrap:wrap;}
+.cat-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:9px 22px;border-radius:100px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;transition:all .2s;}
+.cat-btn.active,.cat-btn:hover{background:rgba(123,47,255,0.15);border-color:rgba(123,47,255,0.5);color:var(--text);}
+
+/* PRODUCTS */
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
+.p-card{background:var(--c2);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .25s;position:relative;}
+.p-card:hover{transform:translateY(-8px);border-color:rgba(123,47,255,0.45);box-shadow:0 24px 60px rgba(123,47,255,0.15);}
+.p-card-top{height:200px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.p-card-top::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(123,47,255,0.08),transparent);}
+.p-badge{position:absolute;top:14px;left:14px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 12px;border-radius:100px;}
+.badge-new{background:rgba(47,255,180,0.12);color:var(--neon3);border:1px solid rgba(47,255,180,0.25);}
+.badge-hot{background:rgba(255,47,123,0.12);color:var(--neon2);border:1px solid rgba(255,47,123,0.25);}
+.badge-sale{background:rgba(255,180,0,0.12);color:#ffb400;border:1px solid rgba(255,180,0,0.25);}
+.badge-ltd{background:rgba(123,47,255,0.15);color:var(--neon);border:1px solid rgba(123,47,255,0.3);}
+.p-card-body{padding:20px;}
+.p-flavor{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--neon3);font-weight:600;margin-bottom:6px;}
+.p-name{font-size:17px;font-weight:700;margin-bottom:4px;letter-spacing:.3px;}
+.p-desc{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.p-footer{display:flex;align-items:center;justify-content:space-between;}
+.p-price{display:flex;align-items:baseline;gap:8px;}
+.p-price-main{font-family:'Syncopate',sans-serif;font-size:20px;color:var(--neon3);}
+.p-price-old{font-size:12px;color:var(--muted);text-decoration:line-through;}
+.p-add{width:40px;height:40px;background:linear-gradient(135deg,var(--neon),var(--neon2));border:none;border-radius:50%;color:#fff;font-size:22px;font-weight:300;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.p-add:hover{transform:scale(1.15);box-shadow:0 0 20px rgba(123,47,255,0.5);}
+
+/* ABOUT */
+.about-strip{background:var(--c2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 48px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.about-visual{height:300px;border-radius:16px;overflow:hidden;position:relative;border:1px solid var(--border);}
+.about-features{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:32px;}
+.af{background:var(--c3);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.af-icon{font-size:24px;margin-bottom:10px;}
+.af-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.af-text{font-size:12px;color:var(--muted);line-height:1.5;}
+
+/* CHECKOUT */
+.checkout-wrap{max-width:1000px;margin:0 auto;}
+.co-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:28px;}
+.co-panel{background:var(--c2);border:1px solid var(--border);border-radius:16px;padding:28px;overflow:hidden;}
+.co-title{font-family:'Syncopate',sans-serif;font-size:16px;letter-spacing:2px;color:var(--neon3);margin-bottom:24px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.f-group{margin-bottom:14px;}
+.f-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block;}
+.f-input,.f-select{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(123,47,255,0.15);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;transition:border-color .2s;appearance:none;}
+.f-input:focus,.f-select:focus{border-color:rgba(123,47,255,0.5);background:rgba(123,47,255,0.04);}
+.f-select option{background:#0f0f1e;}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pay-methods{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.pay-m{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;}
+.pay-m:hover,.pay-m.sel{background:rgba(123,47,255,0.1);border-color:rgba(123,47,255,0.4);color:var(--text);}
+.pay-btn{width:100%;background:linear-gradient(135deg,var(--neon),var(--neon2));color:#fff;border:none;padding:16px;font-family:'Syncopate',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;border-radius:10px;margin-top:16px;transition:all .2s;}
+.pay-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(123,47,255,0.4);}
+.order-line{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.ol-name{font-size:14px;font-weight:600;}
+.ol-qty{font-size:12px;color:var(--muted);margin-top:2px;}
+.ol-price{font-family:'Syncopate',sans-serif;font-size:16px;color:var(--neon3);}
+.order-total-row{display:flex;justify-content:space-between;align-items:center;padding-top:16px;margin-top:4px;border-top:1px solid rgba(123,47,255,0.3);}
+.ot-label{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.ot-val{font-family:'Syncopate',sans-serif;font-size:24px;background:linear-gradient(135deg,var(--neon3),var(--neon));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.ship-box{background:rgba(47,255,180,0.04);border:1px solid rgba(47,255,180,0.12);border-radius:10px;padding:16px;margin-top:16px;}
+.ship-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;font-size:13px;color:var(--muted);}
+.ship-row:last-child{margin-bottom:0;}
+.ship-icon{color:var(--neon3);font-size:14px;flex-shrink:0;}
+.ship-val{color:var(--text);font-weight:600;}
+.empty-cart{text-align:center;padding:40px 0;color:var(--muted);font-size:14px;}
+.empty-cart .ec-icon{font-size:40px;margin-bottom:12px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:32px;right:32px;background:rgba(15,15,30,0.95);border:1px solid rgba(47,255,180,0.3);backdrop-filter:blur(20px);color:var(--neon3);padding:16px 24px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;transform:translateY(90px) scale(.95);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;max-width:280px;}
+.toast.show{transform:translateY(0) scale(1);opacity:1;}
+
+/* FOOTER */
+footer{background:var(--c2);border-top:1px solid var(--border);padding:50px 48px 30px;text-align:center;}
+.footer-logo{font-family:'Syncopate',sans-serif;font-size:22px;letter-spacing:5px;background:linear-gradient(90deg,var(--neon),var(--neon2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:block;margin-bottom:10px;}
+.footer-sub{color:var(--muted);font-size:12px;letter-spacing:1px;margin-bottom:20px;}
+.age-warn{display:inline-flex;align-items:center;gap:8px;background:rgba(255,47,123,0.08);border:1px solid rgba(255,47,123,0.2);color:var(--neon2);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px;border-radius:100px;}
+.footer-links{display:flex;gap:24px;justify-content:center;margin-top:24px;flex-wrap:wrap;}
+.footer-links a{color:var(--muted);text-decoration:none;font-size:12px;letter-spacing:1px;text-transform:uppercase;transition:color .2s;cursor:pointer;}
+.footer-links a:hover{color:var(--neon3);}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  nav{padding:16px 20px;}
+  .nav-links{display:none;}
+  .hero{grid-template-columns:1fr;padding:40px 20px;min-height:auto;}
+  .hero-right{display:none;}
+  .about-strip{grid-template-columns:1fr;padding:60px 20px;gap:40px;}
+  .co-grid{grid-template-columns:1fr;}
+  .section{padding:60px 20px;}
+  .about-features{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curR"></div>
+
+<div class="site">
+
+<nav>
+  <div class="logo">VPRX</div>
+  <div class="nav-links">
+    <a onclick="gs('products')">Products</a>
+    <a onclick="gs('about')">About</a>
+    <a onclick="gs('checkout')">Checkout</a>
+  </div>
+  <div class="nav-right">
+    <div class="cart-pill" onclick="gs('checkout')">
+      <span>Cart</span>
+      <div class="cart-badge" id="cart-count">0</div>
+    </div>
+  </div>
+</nav>
+
+<div class="hero" id="hero">
+  <div class="hero-left">
+    <div class="eyebrow"><span class="eyebrow-dot"></span>Premium Vape &amp; E-Cigarettes</div>
+    <h1>
+      <span class="h1-line1">THE FUTURE</span>
+      <span class="h1-line2">OF VAPOR</span>
+      <span class="h1-line3">IS HERE</span>
+    </h1>
+    <p class="hero-desc">Next-generation devices engineered for unmatched flavour, smooth draws and all-day battery life. Premium hardware. Craft-quality liquids. Shipped discreetly.</p>
+    <div class="hero-actions">
+      <button class="btn-glow" onclick="gs('products')">Shop Collection</button>
+      <button class="btn-ghost" onclick="gs('about')">Our Tech</button>
+    </div>
+    <div class="hero-metrics">
+      <div class="metric"><div class="metric-val">250+</div><div class="metric-lbl">Products</div></div>
+      <div class="metric"><div class="metric-val">4.97★</div><div class="metric-lbl">Rating</div></div>
+      <div class="metric"><div class="metric-val">48h</div><div class="metric-lbl">Delivery</div></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <canvas id="hero-canvas" width="380" height="380"></canvas>
+  </div>
+</div>
+
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee-track"></div>
+</div>
+
+<div class="section" id="products">
+  <div class="sect-label">Collection</div>
+  <div class="sect-title">Shop the Range</div>
+  <p class="sect-sub">From sleek disposables to high-powered mods — find your perfect setup.</p>
+  <div class="cat-strip">
+    <button class="cat-btn active" onclick="filterCat('all',this)">All</button>
+    <button class="cat-btn" onclick="filterCat('disposable',this)">Disposables</button>
+    <button class="cat-btn" onclick="filterCat('mod',this)">Mods &amp; Kits</button>
+    <button class="cat-btn" onclick="filterCat('liquid',this)">E-Liquids</button>
+    <button class="cat-btn" onclick="filterCat('pod',this)">Pod Systems</button>
+  </div>
+  <div class="products-grid" id="prod-grid"></div>
+</div>
+
+<div class="about-strip" id="about">
+  <div>
+    <div class="sect-label">Technology</div>
+    <div class="sect-title">Built Different</div>
+    <p class="sect-sub" style="margin-bottom:0;">Every device in our range is rigorously tested for coil longevity, battery safety, and flavour consistency. We partner with leading hardware manufacturers to bring you the best in class.</p>
+    <div class="about-features">
+      <div class="af"><div class="af-icon">🔋</div><div class="af-title">Long Battery</div><div class="af-text">Up to 5000mAh cells with rapid USB-C charge.</div></div>
+      <div class="af"><div class="af-icon">🌬️</div><div class="af-title">Smooth Draw</div><div class="af-text">Precision airflow control for every preference.</div></div>
+      <div class="af"><div class="af-icon">🛡️</div><div class="af-title">Safety First</div><div class="af-text">Overcharge, short-circuit &amp; temp protection built in.</div></div>
+      <div class="af"><div class="af-icon">🎨</div><div class="af-title">50+ Flavours</div><div class="af-text">Craft-quality nicotine salts &amp; freebase liquids.</div></div>
+    </div>
+  </div>
+  <div class="about-visual"><canvas id="about-canvas" width="420" height="300"></canvas></div>
+</div>
+
+<div class="section" id="checkout">
+  <div class="sect-label">Checkout</div>
+  <div class="sect-title">Complete Order</div>
+  <p class="sect-sub" style="margin-bottom:36px;">Fast, secure, discreet — age verification required on delivery.</p>
+  <div class="checkout-wrap">
+    <div class="co-grid">
+      <div class="co-panel">
+        <div class="co-title">Shipping &amp; Payment</div>
+        <div class="f-row">
+          <div class="f-group"><label class="f-label">First Name</label><input class="f-input" id="fn" placeholder="Alex"/></div>
+          <div class="f-group"><label class="f-label">Last Name</label><input class="f-input" placeholder="Johnson"/></div>
+        </div>
+        <div class="f-row">
+          <div class="f-group"><label class="f-label">Email</label><input class="f-input" id="em" placeholder="alex@email.com"/></div>
+          <div class="f-group"><label class="f-label">Phone</label><input class="f-input" placeholder="+1 (613) 555-0000"/></div>
+        </div>
+        <div class="f-group"><label class="f-label">Street Address</label><input class="f-input" placeholder="123 Rideau Street"/></div>
+        <div class="f-row">
+          <div class="f-group"><label class="f-label">City</label><input class="f-input" placeholder="Ottawa"/></div>
+          <div class="f-group"><label class="f-label">Postal / ZIP</label><input class="f-input" placeholder="K1N 9B6"/></div>
+        </div>
+        <div class="f-row">
+          <div class="f-group"><label class="f-label">Province / State</label>
+            <select class="f-select"><option>Ontario</option><option>Quebec</option><option>British Columbia</option><option>Alberta</option><option>Manitoba</option><option>Nova Scotia</option><option>New York</option><option>California</option><option>Florida</option></select>
+          </div>
+          <div class="f-group"><label class="f-label">Shipping Method</label>
+            <select class="f-select" id="ship-sel" onchange="updateTotal()">
+              <option value="0">Free Standard (5–7 days)</option>
+              <option value="8.99">Express — $8.99 (2–3 days)</option>
+              <option value="17.99">Overnight — $17.99 (next day)</option>
+            </select>
+          </div>
+        </div>
+        <div class="co-title" style="margin-top:20px;">Payment</div>
+        <div class="pay-methods">
+          <div class="pay-m sel">Visa</div>
+          <div class="pay-m">Mastercard</div>
+          <div class="pay-m">Amex</div>
+          <div class="pay-m">PayPal</div>
+          <div class="pay-m">Apple Pay</div>
+        </div>
+        <div class="f-group"><label class="f-label">Card Number</label><input class="f-input" id="cc" placeholder="4242 4242 4242 4242" maxlength="19"/></div>
+        <div class="f-row">
+          <div class="f-group"><label class="f-label">Expiry</label><input class="f-input" placeholder="MM / YY" maxlength="7"/></div>
+          <div class="f-group"><label class="f-label">CVV</label><input class="f-input" placeholder="•••" maxlength="4" type="password"/></div>
+        </div>
+        <button class="pay-btn" onclick="doCheckout()">Place Order →</button>
+      </div>
+      <div class="co-panel">
+        <div class="co-title">Order Summary</div>
+        <div id="order-lines"></div>
+        <div class="order-total-row"><span class="ot-label">Total</span><span class="ot-val" id="order-total">$0.00</span></div>
+        <div class="ship-box">
+          <div class="ship-row"><span class="ship-icon">📦</span><div><div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:2px;">Delivery</div><span class="ship-val" id="ship-eta">Select shipping above</span></div></div>
+          <div class="ship-row"><span class="ship-icon">🕵️</span><div>Discreet packaging — no brand markings</div></div>
+          <div class="ship-row"><span class="ship-icon">🔞</span><div>ID check required on delivery</div></div>
+          <div class="ship-row"><span class="ship-icon">🔒</span><div>256-bit SSL encrypted transaction</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span class="footer-logo">VPRX</span>
+  <p class="footer-sub">Premium Vape &amp; E-Cigarettes · Canada &amp; USA</p>
+  <div class="age-warn">⚠ Must be 19+ to purchase · ID required</div>
+  <div class="footer-links">
+    <a>Privacy Policy</a><a>Terms of Use</a><a>Returns</a><a>Age Verification</a><a>Contact</a>
+  </div>
+  <p style="color:var(--muted);font-size:11px;margin-top:24px;">© 2025 VPRX. All rights reserved. Nicotine products are for adults only.</p>
+</footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// CURSOR
+const cur=document.getElementById('cur'),curR=document.getElementById('curR');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+function animCursor(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(animCursor);}animCursor();
+
+// BACKGROUND PARTICLES
+const bgC=document.getElementById('bg');const bgX=bgC.getContext('2d');
+let BW,BH;function resizeBG(){BW=bgC.width=window.innerWidth;BH=bgC.height=window.innerHeight;}resizeBG();window.addEventListener('resize',resizeBG);
+const pts=Array.from({length:110},()=>({x:Math.random()*3000,y:Math.random()*2000,r:Math.random()*1.2+.2,vx:(Math.random()-.5)*.15,vy:(Math.random()-.5)*.15,h:Math.random()<.5?'123,47,255':'47,255,180',o:Math.random()*.5+.1}));
+function animBG(){bgX.clearRect(0,0,BW,BH);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=BW;if(p.x>BW)p.x=0;if(p.y<0)p.y=BH;if(p.y>BH)p.y=0;bgX.beginPath();bgX.arc(p.x,p.y,p.r,0,Math.PI*2);bgX.fillStyle=`rgba(${p.h},${p.o})`;bgX.fill();});requestAnimationFrame(animBG);}animBG();
+
+// MARQUEE
+const mItems=['Free Shipping Over $49','Premium Hardware','50+ Flavours','5000+ Happy Customers','Age Verified Delivery','SSL Secured Checkout','Same Day Dispatch','Nicotine Salts & Freebase','Disposables · Mods · Pods'];
+const mTrack=document.getElementById('marquee-track');
+let mHTML='';[...mItems,...mItems].forEach(i=>{mHTML+=`<span class="marquee-item"><span>✦</span>${i}</span>`;});
+mTrack.innerHTML=mHTML;
+
+// HERO THREE.JS
+const hC=document.getElementById('hero-canvas');
+const hR=new THREE.WebGLRenderer({canvas:hC,antialias:true,alpha:true});
+hR.setPixelRatio(Math.min(devicePixelRatio,2));hR.setSize(380,380);
+const hS=new THREE.Scene();
+const hCam=new THREE.PerspectiveCamera(42,1,.1,100);hCam.position.set(0,0,6);
+hS.add(new THREE.AmbientLight(0xffffff,.3));
+const hDL=new THREE.DirectionalLight(0xffffff,.7);hDL.position.set(4,6,4);hS.add(hDL);
+const hPL1=new THREE.PointLight(0x7b2fff,2,10);hPL1.position.set(-3,3,3);hS.add(hPL1);
+const hPL2=new THREE.PointLight(0xff2f7b,1.5,8);hPL2.position.set(3,-2,3);hS.add(hPL2);
+const hPL3=new THREE.PointLight(0x2fffb4,1.2,8);hPL3.position.set(0,0,4);hS.add(hPL3);
+const hG=new THREE.Group();
+const vMat=new THREE.MeshStandardMaterial({color:0x0a0a14,metalness:.98,roughness:.05});
+hG.add(new THREE.Mesh(new THREE.CylinderGeometry(.28,.32,3.2,48),vMat));
+const bandMat=new THREE.MeshStandardMaterial({color:0x7b2fff,emissive:0x7b2fff,emissiveIntensity:.6,metalness:.4,roughness:.2});
+const band=new THREE.Mesh(new THREE.CylinderGeometry(.29,.29,.08,48),bandMat);band.position.y=.6;hG.add(band);
+const mpMat=new THREE.MeshStandardMaterial({color:0x1a1a2e,metalness:.7,roughness:.15});
+const mpBody=new THREE.Mesh(new THREE.CylinderGeometry(.14,.26,.4,32),mpMat);mpBody.position.y=1.8;hG.add(mpBody);
+const mpTip=new THREE.Mesh(new THREE.CylinderGeometry(.10,.14,.2,32),new THREE.MeshStandardMaterial({color:0x2fffb4,emissive:0x2fffb4,emissiveIntensity:.5,metalness:.3,roughness:.2}));mpTip.position.y=2.1;hG.add(mpTip);
+const lMat1=new THREE.MeshStandardMaterial({color:0x7b2fff,emissive:0x7b2fff,emissiveIntensity:1.5,roughness:.1});
+const lMat2=new THREE.MeshStandardMaterial({color:0x2fffb4,emissive:0x2fffb4,emissiveIntensity:1.2,roughness:.1});
+const ring1=new THREE.Mesh(new THREE.TorusGeometry(.3,.025,16,80),lMat1);ring1.rotation.x=Math.PI/2;ring1.position.y=.6;hG.add(ring1);
+const ring2=new THREE.Mesh(new THREE.TorusGeometry(.3,.018,16,80),lMat2);ring2.rotation.x=Math.PI/2;ring2.position.y=-1.2;hG.add(ring2);
+const capMat=new THREE.MeshStandardMaterial({color:0x7b2fff,emissive:0x7b2fff,emissiveIntensity:.3,metalness:.8,roughness:.1});
+const cap=new THREE.Mesh(new THREE.CylinderGeometry(.28,.24,.15,32),capMat);cap.position.y=-1.67;hG.add(cap);
+const sBtnMat=new THREE.MeshStandardMaterial({color:0xff2f7b,emissive:0xff2f7b,emissiveIntensity:.8,roughness:.2});
+const sBtn=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.06,16),sBtnMat);sBtn.rotation.z=Math.PI/2;sBtn.position.set(.3,.2,0);hG.add(sBtn);
+for(let i=0;i<8;i++){const ang=i/8*Math.PI*2;const dist=1.7;const hx=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.02,6),new THREE.MeshStandardMaterial({color:i%2?0x7b2fff:0xff2f7b,emissive:i%2?0x7b2fff:0xff2f7b,emissiveIntensity:.9,transparent:true,opacity:.75}));hx.position.set(Math.cos(ang)*dist,Math.sin(ang*1.5+1)*.5,Math.sin(ang)*dist);hG.add(hx);}
+const orbitRing=new THREE.Mesh(new THREE.TorusGeometry(1.8,.008,8,120),new THREE.MeshStandardMaterial({color:0x7b2fff,emissive:0x7b2fff,emissiveIntensity:.4,transparent:true,opacity:.5}));orbitRing.rotation.x=Math.PI/3;hS.add(orbitRing);
+const orbitRing2=new THREE.Mesh(new THREE.TorusGeometry(2.2,.005,8,120),new THREE.MeshStandardMaterial({color:0x2fffb4,emissive:0x2fffb4,emissiveIntensity:.4,transparent:true,opacity:.35}));orbitRing2.rotation.x=Math.PI/5;orbitRing2.rotation.z=Math.PI/4;hS.add(orbitRing2);
+hG.position.y=.2;hS.add(hG);
+let isDrag=false,pX=0,pY=0,rY=0,rX=0;
+hC.addEventListener('mousedown',e=>{isDrag=true;pX=e.clientX;pY=e.clientY;});
+window.addEventListener('mouseup',()=>isDrag=false);
+window.addEventListener('mousemove',e=>{if(!isDrag)return;rY+=(e.clientX-pX)*.012;rX+=(e.clientY-pY)*.012;pX=e.clientX;pY=e.clientY;});
+hC.addEventListener('touchstart',e=>{isDrag=true;pX=e.touches[0].clientX;pY=e.touches[0].clientY;},{passive:true});
+hC.addEventListener('touchend',()=>isDrag=false);
+hC.addEventListener('touchmove',e=>{if(!isDrag)return;rY+=(e.touches[0].clientX-pX)*.012;rX+=(e.touches[0].clientY-pY)*.012;pX=e.touches[0].clientX;pY=e.touches[0].clientY;},{passive:true});
+let hT=0;
+function animHero(){requestAnimationFrame(animHero);hT+=.016;if(!isDrag){rY+=.007;rX=Math.sin(hT*.3)*.1;}hG.rotation.y=rY;hG.rotation.x=rX;ring1.material.emissiveIntensity=1+Math.sin(hT*4)*.5;ring2.material.emissiveIntensity=.8+Math.cos(hT*3)*.4;orbitRing.rotation.z+=.006;orbitRing2.rotation.y+=.004;hPL1.intensity=1.8+Math.sin(hT*1.5)*.4;hR.render(hS,hCam);}animHero();
+
+// ABOUT CANVAS
+const aC=document.getElementById('about-canvas');
+const aR=new THREE.WebGLRenderer({canvas:aC,antialias:true,alpha:true});
+aR.setPixelRatio(Math.min(devicePixelRatio,2));aR.setSize(420,300);
+const aS=new THREE.Scene();const aCam=new THREE.PerspectiveCamera(50,420/300,.1,100);aCam.position.set(0,0,7);
+aS.add(new THREE.AmbientLight(0xffffff,.4));const aDL=new THREE.DirectionalLight(0xffffff,.8);aDL.position.set(3,5,3);aS.add(aDL);
+aS.add(new THREE.PointLight(0x7b2fff,2,10,2));aS.add(new THREE.PointLight(0xff2f7b,1.5,10,2));
+const devColors=[0x7b2fff,0xff2f7b,0x2fffb4];const devPositions=[-2.2,0,2.2];const devGroups=[];
+devColors.forEach((c,i)=>{const dg=new THREE.Group();const dm=new THREE.MeshStandardMaterial({color:0x0a0a14,metalness:.95,roughness:.08});dg.add(new THREE.Mesh(new THREE.CylinderGeometry(.18,.21,2,32),dm));const dr=new THREE.Mesh(new THREE.TorusGeometry(.2,.018,8,50),new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:1}));dr.rotation.x=Math.PI/2;dr.position.y=.5;dg.add(dr);const dt=new THREE.Mesh(new THREE.CylinderGeometry(.09,.16,.28,16),new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.4,metalness:.3,roughness:.2}));dt.position.y=1.14;dg.add(dt);dg.position.x=devPositions[i];dg.position.y=Math.sin(i)*0.3;dg.rotation.z=[-0.15,0,0.15][i];aS.add(dg);devGroups.push(dg);});
+let aT=0;function animAbout(){requestAnimationFrame(animAbout);aT+=.016;devGroups.forEach((dg,i)=>{dg.rotation.y+=.01;dg.position.y=Math.sin(aT+i*2)*0.3;});aR.render(aS,aCam);}animAbout();
+
+// PRODUCTS
+const prods=[
+  {cat:'disposable',name:'CloudX Pro 10000',sub:'Disposable',desc:'10000 puffs · Mesh coil · USB-C rechargeable',price:26.99,old:32.99,badge:'hot',col:0xff2f7b,shape:'pen'},
+  {cat:'disposable',name:'Phantom Ultra 8K',sub:'Disposable',desc:'8000 puffs · Dual mesh · Auto-draw',price:22.99,old:null,badge:'new',col:0x7b2fff,shape:'pen'},
+  {cat:'mod',name:'ArcMod X200',sub:'Box Mod Kit',desc:'200W · Full colour screen · Dual 21700 · 5 safety modes',price:89.99,old:109.99,badge:'sale',col:0x2fffb4,shape:'box'},
+  {cat:'mod',name:'NovaPod SE Kit',sub:'Pod Mod Kit',desc:'40W · Refillable · 1500mAh · Leak-proof',price:49.99,old:null,badge:'new',col:0xff2f7b,shape:'pod'},
+  {cat:'liquid',name:'Frostbite Nic Salt',sub:'E-Liquid',desc:'Icy menthol mint · 20mg · 30ml salt nic',price:13.99,old:null,badge:'new',col:0x2fffb4,shape:'bottle'},
+  {cat:'liquid',name:'Mango Haze Freebase',sub:'E-Liquid',desc:'Tropical mango · 3mg freebase · 60ml',price:16.99,old:19.99,badge:'sale',col:0xffb400,shape:'bottle'},
+  {cat:'pod',name:'SteamX Pod System',sub:'Pod System',desc:'22W · Magnetic pod lock · 900mAh · 2ml pods',price:34.99,old:null,badge:'ltd',col:0x7b2fff,shape:'pod'},
+  {cat:'mod',name:'MegaKit Bundle',sub:'Starter Bundle',desc:'Mod + 2 pods + 2 liquids — everything to start',price:79.99,old:119.99,badge:'sale',col:0xff2f7b,shape:'box'},
+];
+
+const miniR={};
+function makeMiniCanvas(prod,idx){
+  const c=document.createElement('canvas');c.width=150;c.height=170;
+  const r=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});r.setSize(150,170);r.setPixelRatio(1.5);
+  const s=new THREE.Scene();const cam=new THREE.PerspectiveCamera(45,150/170,.1,50);cam.position.z=4;
+  s.add(new THREE.AmbientLight(0xffffff,.5));const dl=new THREE.DirectionalLight(0xffffff,.7);dl.position.set(2,3,2);s.add(dl);
+  const pl=new THREE.PointLight(prod.col,2.5,7);pl.position.set(-1.5,1.5,2);s.add(pl);
+  const g=new THREE.Group();
+  const mMat=new THREE.MeshStandardMaterial({color:0x0a0a16,metalness:.95,roughness:.08});
+  const acMat=new THREE.MeshStandardMaterial({color:prod.col,emissive:prod.col,emissiveIntensity:.7,metalness:.3,roughness:.15});
+  if(prod.shape==='pen'){
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(.2,.24,2.4,32),mMat));
+    const tr=new THREE.Mesh(new THREE.TorusGeometry(.21,.02,8,50),acMat);tr.rotation.x=Math.PI/2;tr.position.y=.5;g.add(tr);
+    const tp=new THREE.Mesh(new THREE.CylinderGeometry(.1,.18,.3,16),acMat);tp.position.y=1.35;g.add(tp);
+    const bc=new THREE.Mesh(new THREE.CylinderGeometry(.2,.17,.12,32),acMat);bc.position.y=-1.26;g.add(bc);
+  }else if(prod.shape==='box'){
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(1.1,1.8,.52),mMat));
+    const sc=new THREE.Mesh(new THREE.BoxGeometry(.65,.75,.04),new THREE.MeshStandardMaterial({color:prod.col,emissive:prod.col,emissiveIntensity:.8}));sc.position.set(0,.35,.28);g.add(sc);
+    const b1=new THREE.Mesh(new THREE.BoxGeometry(.14,.14,.05),acMat);b1.position.set(0,-.6,.28);g.add(b1);
+  }else if(prod.shape==='bottle'){
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,2,24),new THREE.MeshStandardMaterial({color:prod.col,metalness:.05,roughness:.3,transparent:true,opacity:.82})));
+    const mc=new THREE.Mesh(new THREE.CylinderGeometry(.12,.2,.3,16),mMat);mc.position.y=1.15;g.add(mc);
+  }else{
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(.8,1.4,.38),mMat));
+    const pv=new THREE.Mesh(new THREE.BoxGeometry(.22,1.55,.22),acMat);pv.position.set(0,.1,-.08);g.add(pv);
+  }
+  g.rotation.x=.25;s.add(g);miniR[idx]={r,s,cam,g};
+  function anim(){requestAnimationFrame(anim);g.rotation.y+=.014;r.render(s,cam);}anim();
+  return c;
+}
+
+const cart=[];
+function renderProducts(cat){
+  const grid=document.getElementById('prod-grid');grid.innerHTML='';
+  prods.forEach((p,i)=>{
+    if(cat!=='all'&&p.cat!==cat)return;
+    const card=document.createElement('div');card.className='p-card';
+    card.innerHTML=`<div class="p-card-top"><div class="p-badge badge-${p.badge}">${p.badge.toUpperCase()}</div></div><div class="p-card-body"><div class="p-flavor">${p.sub}</div><div class="p-name">${p.name}</div><div class="p-desc">${p.desc}</div><div class="p-footer"><div class="p-price">${p.old?`<span class="p-price-old">$${p.old.toFixed(2)}</span>`:''}<span class="p-price-main">$${p.price.toFixed(2)}</span></div><button class="p-add" onclick="addCart(${i},event)">+</button></div></div>`;
+    card.querySelector('.p-card-top').appendChild(makeMiniCanvas(p,i));
+    grid.appendChild(card);
+  });
+}
+function filterCat(cat,el){document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderProducts(cat);}
+function addCart(idx,e){e.stopPropagation();const p=prods[idx];const ex=cart.find(c=>c.name===p.name);if(ex)ex.qty++;else cart.push({name:p.name,price:p.price,qty:1});document.getElementById('cart-count').textContent=cart.reduce((a,c)=>a+c.qty,0);updateOrder();toast('✓ '+p.name+' added!');}
+function updateOrder(){const lines=document.getElementById('order-lines');if(!cart.length){lines.innerHTML='<div class="empty-cart"><div class="ec-icon">🛒</div>Your cart is empty.<br>Add some products!</div>';document.getElementById('order-total').textContent='$0.00';return;}lines.innerHTML=cart.map(c=>`<div class="order-line"><div><div class="ol-name">${c.name}</div><div class="ol-qty">Qty: ${c.qty}</div></div><div class="ol-price">$${(c.price*c.qty).toFixed(2)}</div></div>`).join('');updateTotal();}
+function updateTotal(){if(!cart.length)return;const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);const sel=document.getElementById('ship-sel');const ship=sel?parseFloat(sel.value):0;document.getElementById('order-total').textContent='$'+(sub+ship).toFixed(2);const idx=sel?sel.selectedIndex:0;const etas=['5–7 business days','2–3 business days','Next business day'];const eta=document.getElementById('ship-eta');if(eta)eta.textContent=etas[idx]||etas[0];}
+function doCheckout(){const fn=document.getElementById('fn').value;const em=document.getElementById('em').value;const cc=document.getElementById('cc').value;if(!fn||!em){toast('⚠ Please fill in your name and email.');return;}if(!cc){toast('⚠ Please enter your card number.');return;}if(!cart.length){toast('⚠ Your cart is empty!');return;}toast('🎉 Order confirmed! Check your email for tracking.');cart.length=0;updateOrder();document.getElementById('cart-count').textContent='0';}
+function gs(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+document.querySelectorAll('.pay-m').forEach(m=>{m.addEventListener('click',function(){document.querySelectorAll('.pay-m').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');});});
+renderProducts('all');updateOrder();
+</script>
+</body>
+</html>
