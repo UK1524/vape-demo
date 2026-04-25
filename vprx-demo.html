@@ -53,7 +53,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:20px 4
 .metric{background:var(--c2);padding:16px;text-align:center;}
 .metric-val{font-family:'Syncopate',sans-serif;font-size:22px;background:linear-gradient(135deg,var(--neon3),var(--neon));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .metric-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:4px;}
-.hero-right{display:flex;align-items:center;justify-content:center;z-index:2;}
+.hero-right{display:flex;align-items:center;justify-content:center;z-index:2;position:relative;}
 #hero-canvas{border-radius:20px;cursor:grab;filter:drop-shadow(0 0 60px rgba(123,47,255,0.3));}
 #hero-canvas:active{cursor:grabbing;}
 
@@ -338,7 +338,9 @@ const mTrack=document.getElementById('marquee-track');
 let mHTML='';[...mItems,...mItems].forEach(i=>{mHTML+=`<span class="marquee-item"><span>✦</span>${i}</span>`;});
 mTrack.innerHTML=mHTML;
 
-// HERO THREE.JS
+// ─────────────────────────────────────────────
+//  HERO THREE.JS  —  Vape + Smoke/Vapor System
+// ─────────────────────────────────────────────
 const hC=document.getElementById('hero-canvas');
 const hR=new THREE.WebGLRenderer({canvas:hC,antialias:true,alpha:true});
 hR.setPixelRatio(Math.min(devicePixelRatio,2));hR.setSize(380,380);
@@ -349,6 +351,10 @@ const hDL=new THREE.DirectionalLight(0xffffff,.7);hDL.position.set(4,6,4);hS.add
 const hPL1=new THREE.PointLight(0x7b2fff,2,10);hPL1.position.set(-3,3,3);hS.add(hPL1);
 const hPL2=new THREE.PointLight(0xff2f7b,1.5,8);hPL2.position.set(3,-2,3);hS.add(hPL2);
 const hPL3=new THREE.PointLight(0x2fffb4,1.2,8);hPL3.position.set(0,0,4);hS.add(hPL3);
+
+// Pulsing point light at tip — gives the neon glow that "breathes" with the vapor
+const hTipLight=new THREE.PointLight(0xb0eeff,0,3.5);hS.add(hTipLight);
+
 const hG=new THREE.Group();
 const vMat=new THREE.MeshStandardMaterial({color:0x0a0a14,metalness:.98,roughness:.05});
 hG.add(new THREE.Mesh(new THREE.CylinderGeometry(.28,.32,3.2,48),vMat));
@@ -356,7 +362,19 @@ const bandMat=new THREE.MeshStandardMaterial({color:0x7b2fff,emissive:0x7b2fff,e
 const band=new THREE.Mesh(new THREE.CylinderGeometry(.29,.29,.08,48),bandMat);band.position.y=.6;hG.add(band);
 const mpMat=new THREE.MeshStandardMaterial({color:0x1a1a2e,metalness:.7,roughness:.15});
 const mpBody=new THREE.Mesh(new THREE.CylinderGeometry(.14,.26,.4,32),mpMat);mpBody.position.y=1.8;hG.add(mpBody);
-const mpTip=new THREE.Mesh(new THREE.CylinderGeometry(.10,.14,.2,32),new THREE.MeshStandardMaterial({color:0x2fffb4,emissive:0x2fffb4,emissiveIntensity:.5,metalness:.3,roughness:.2}));mpTip.position.y=2.1;hG.add(mpTip);
+
+// Mouthpiece tip — glowing neon cyan, slightly larger for drama
+const mpTip=new THREE.Mesh(
+  new THREE.CylinderGeometry(.10,.14,.22,32),
+  new THREE.MeshStandardMaterial({color:0x2fffb4,emissive:0x2fffb4,emissiveIntensity:1.2,metalness:.3,roughness:.1})
+);
+mpTip.position.y=2.11;hG.add(mpTip);
+
+// Tiny glow sphere at the very top of the tip
+const tipGlowMat=new THREE.MeshStandardMaterial({color:0xaaffee,emissive:0xaaffee,emissiveIntensity:2,transparent:true,opacity:.8});
+const tipGlow=new THREE.Mesh(new THREE.SphereGeometry(.07,16,16),tipGlowMat);
+tipGlow.position.y=2.24;hG.add(tipGlow);
+
 const lMat1=new THREE.MeshStandardMaterial({color:0x7b2fff,emissive:0x7b2fff,emissiveIntensity:1.5,roughness:.1});
 const lMat2=new THREE.MeshStandardMaterial({color:0x2fffb4,emissive:0x2fffb4,emissiveIntensity:1.2,roughness:.1});
 const ring1=new THREE.Mesh(new THREE.TorusGeometry(.3,.025,16,80),lMat1);ring1.rotation.x=Math.PI/2;ring1.position.y=.6;hG.add(ring1);
@@ -369,6 +387,104 @@ for(let i=0;i<8;i++){const ang=i/8*Math.PI*2;const dist=1.7;const hx=new THREE.M
 const orbitRing=new THREE.Mesh(new THREE.TorusGeometry(1.8,.008,8,120),new THREE.MeshStandardMaterial({color:0x7b2fff,emissive:0x7b2fff,emissiveIntensity:.4,transparent:true,opacity:.5}));orbitRing.rotation.x=Math.PI/3;hS.add(orbitRing);
 const orbitRing2=new THREE.Mesh(new THREE.TorusGeometry(2.2,.005,8,120),new THREE.MeshStandardMaterial({color:0x2fffb4,emissive:0x2fffb4,emissiveIntensity:.4,transparent:true,opacity:.35}));orbitRing2.rotation.x=Math.PI/5;orbitRing2.rotation.z=Math.PI/4;hS.add(orbitRing2);
 hG.position.y=.2;hS.add(hG);
+
+// ── SMOKE / VAPOR PARTICLE SYSTEM ──────────────────────────────────
+// Build a soft radial gradient texture for each puff
+function makeSmokeTexture(innerCol,outerCol){
+  const c=document.createElement('canvas');c.width=c.height=128;
+  const ctx=c.getContext('2d');
+  const g=ctx.createRadialGradient(64,64,0,64,64,64);
+  g.addColorStop(0,innerCol);
+  g.addColorStop(0.35,outerCol);
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,128,128);
+  return new THREE.CanvasTexture(c);
+}
+
+// Two texture variants — a blue-white hot core and a purple outer wisp
+const sTex1=makeSmokeTexture('rgba(200,240,255,0.95)','rgba(120,180,255,0.45)');
+const sTex2=makeSmokeTexture('rgba(180,140,255,0.80)','rgba(80,40,180,0.25)');
+const sTex3=makeSmokeTexture('rgba(255,255,255,0.70)','rgba(160,220,255,0.20)');
+
+const sTextures=[sTex1,sTex2,sTex3];
+
+// Particle pool — 55 sprites for a full, voluminous plume
+const SMOKE_COUNT=55;
+const smokePool=[];
+
+for(let i=0;i<SMOKE_COUNT;i++){
+  const mat=new THREE.SpriteMaterial({
+    map:sTextures[i%3],
+    transparent:true,
+    depthWrite:false,
+    blending:THREE.AdditiveBlending,
+    opacity:0,
+    rotation:Math.random()*Math.PI*2
+  });
+  const sprite=new THREE.Sprite(mat);
+  sprite.scale.set(.01,.01,.01);
+  hS.add(sprite);
+  smokePool.push({
+    sprite,
+    life:Math.random(),               // stagger start
+    maxLife: 1.8+Math.random()*1.6,
+    pos:new THREE.Vector3(
+      (Math.random()-.5)*.08,
+      2.3+(Math.random()-.5)*.05,
+      (Math.random()-.5)*.08
+    ),
+    vel:new THREE.Vector3(
+      (Math.random()-.5)*.012,
+      0.018+Math.random()*.022,
+      (Math.random()-.5)*.012
+    ),
+    rotSpeed:(Math.random()-.5)*.018,
+    baseScale:.14+Math.random()*.18,
+    turbX:Math.random()*6.28,
+    turbZ:Math.random()*6.28,
+    turbFreq:.4+Math.random()*.6,
+    turbAmp:.004+Math.random()*.006
+  });
+}
+
+// Reusable world-position vector for the tip
+const tipWorldPos=new THREE.Vector3();
+
+function resetSmoke(p){
+  mpTip.getWorldPosition(tipWorldPos);
+  p.life=0;
+  p.maxLife=1.8+Math.random()*1.6;
+  p.pos.copy(tipWorldPos).add(new THREE.Vector3(
+    (Math.random()-.5)*.06,
+    0.02,
+    (Math.random()-.5)*.06
+  ));
+  p.vel.set(
+    (Math.random()-.5)*.013,
+    0.016+Math.random()*.024,
+    (Math.random()-.5)*.013
+  );
+  p.sprite.material.rotation=Math.random()*Math.PI*2;
+  p.baseScale=.12+Math.random()*.20;
+  p.turbX=Math.random()*6.28;
+  p.turbZ=Math.random()*6.28;
+  p.turbFreq=.4+Math.random()*.6;
+  p.turbAmp=.003+Math.random()*.007;
+}
+
+// Pre-position staggered particles on first load
+smokePool.forEach(p=>{
+  resetSmoke(p);
+  // Random head-start so plume looks full immediately
+  const headStart=Math.random();
+  p.life=headStart*p.maxLife;
+  p.pos.y+=headStart*p.vel.y*p.maxLife*60;
+  p.pos.x+=p.vel.x*p.maxLife*60*headStart;
+  p.pos.z+=p.vel.z*p.maxLife*60*headStart;
+});
+// ── END SMOKE SETUP ─────────────────────────────────────────────────
+
+// Drag interaction
 let isDrag=false,pX=0,pY=0,rY=0,rX=0;
 hC.addEventListener('mousedown',e=>{isDrag=true;pX=e.clientX;pY=e.clientY;});
 window.addEventListener('mouseup',()=>isDrag=false);
@@ -376,8 +492,77 @@ window.addEventListener('mousemove',e=>{if(!isDrag)return;rY+=(e.clientX-pX)*.01
 hC.addEventListener('touchstart',e=>{isDrag=true;pX=e.touches[0].clientX;pY=e.touches[0].clientY;},{passive:true});
 hC.addEventListener('touchend',()=>isDrag=false);
 hC.addEventListener('touchmove',e=>{if(!isDrag)return;rY+=(e.touches[0].clientX-pX)*.012;rX+=(e.touches[0].clientY-pY)*.012;pX=e.touches[0].clientX;pY=e.touches[0].clientY;},{passive:true});
+
 let hT=0;
-function animHero(){requestAnimationFrame(animHero);hT+=.016;if(!isDrag){rY+=.007;rX=Math.sin(hT*.3)*.1;}hG.rotation.y=rY;hG.rotation.x=rX;ring1.material.emissiveIntensity=1+Math.sin(hT*4)*.5;ring2.material.emissiveIntensity=.8+Math.cos(hT*3)*.4;orbitRing.rotation.z+=.006;orbitRing2.rotation.y+=.004;hPL1.intensity=1.8+Math.sin(hT*1.5)*.4;hR.render(hS,hCam);}animHero();
+function animHero(){
+  requestAnimationFrame(animHero);
+  hT+=.016;
+  // Vape rotation
+  if(!isDrag){rY+=.007;rX=Math.sin(hT*.3)*.1;}
+  hG.rotation.y=rY;hG.rotation.x=rX;
+
+  // Tip glow pulse
+  const gIntensity=1.2+Math.sin(hT*3.5)*.6;
+  tipGlowMat.emissiveIntensity=gIntensity;
+  tipGlowMat.opacity=.6+Math.sin(hT*3.5)*.25;
+  mpTip.material.emissiveIntensity=.9+Math.sin(hT*3.5)*.4;
+
+  // Point light at tip breathes with glow
+  mpTip.getWorldPosition(tipWorldPos);
+  hTipLight.position.copy(tipWorldPos);
+  hTipLight.intensity=1.2+Math.sin(hT*3.5)*.8;
+
+  // ── ANIMATE SMOKE PARTICLES ──────────────────────────
+  smokePool.forEach(p=>{
+    p.life+=.016;
+    if(p.life>=p.maxLife){
+      resetSmoke(p);
+      return;
+    }
+    const t=p.life/p.maxLife;         // 0 → 1 over lifetime
+
+    // Opacity: quick fade-in (0→0.35 lifetime), gentle fade-out
+    let opacity;
+    if(t<0.12){
+      opacity=(t/0.12)*0.65;
+    } else {
+      opacity=0.65*(1-Math.pow((t-0.12)/0.88,1.4));
+    }
+    p.sprite.material.opacity=Math.max(0,opacity);
+
+    // Scale: start tiny, billow out
+    const sc=p.baseScale*(0.08+t*1.0);
+    p.sprite.scale.set(sc,sc,sc);
+
+    // Slow turbulent drift — makes it feel like real smoke
+    p.turbX+=p.turbFreq*.016;
+    p.turbZ+=p.turbFreq*.016*1.3;
+    const tx=Math.sin(p.turbX)*p.turbAmp*(1+t*2);
+    const tz=Math.cos(p.turbZ)*p.turbAmp*(1+t*2);
+
+    p.pos.x+=p.vel.x+tx;
+    p.pos.y+=p.vel.y*(1-t*.35);      // decelerate gently as it rises
+    p.pos.z+=p.vel.z+tz;
+
+    // Subtle horizontal spread acceleration
+    p.vel.x*=1.006;
+    p.vel.z*=1.006;
+
+    // Slow rotation of sprite for wispy look
+    p.sprite.material.rotation+=p.rotSpeed;
+
+    p.sprite.position.copy(p.pos);
+  });
+  // ── END SMOKE UPDATE ──────────────────────────────────
+
+  ring1.material.emissiveIntensity=1+Math.sin(hT*4)*.5;
+  ring2.material.emissiveIntensity=.8+Math.cos(hT*3)*.4;
+  orbitRing.rotation.z+=.006;
+  orbitRing2.rotation.y+=.004;
+  hPL1.intensity=1.8+Math.sin(hT*1.5)*.4;
+  hR.render(hS,hCam);
+}
+animHero();
 
 // ABOUT CANVAS
 const aC=document.getElementById('about-canvas');
